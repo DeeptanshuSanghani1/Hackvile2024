@@ -17,7 +17,6 @@ def get_questions():
     job_description = request.form['job_description']
     questions = get_interview_questions(job_description)
     
-    # return render_template('questions.html', questions=questions)
     return jsonify(questions)
 
 
@@ -44,8 +43,6 @@ def get_interview_questions(job_description):
             except json.JSONDecodeError:
                 return {"response": message.content.strip()}
     return {"error": "No questions were generated."}
-
-
 
 
 if __name__ == '__main__':
