@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 const Home = () => {
   return (
     <div>
-      <Link to="/questions">Generate interview questions</Link>
+      <Link to="/questions" className=" text-red-700">
+        Generate interview questions
+      </Link>
     </div>
   );
 };

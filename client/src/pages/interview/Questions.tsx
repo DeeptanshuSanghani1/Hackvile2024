@@ -34,7 +34,7 @@ const Questions = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="">
         <input
           {...register("jobTitle", { required: true })}
           placeholder="Job title"
