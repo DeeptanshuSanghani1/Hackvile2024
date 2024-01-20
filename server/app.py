@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
 import json
 
-app = Flask(__name__)
+load_dotenv()
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+app = Flask(__name__)
+CORS(app)
+
+print(os.getenv("API_KEY"))
+client = OpenAI(api_key=os.getenv("API_KEY"))
 
 
 @app.route("/")
@@ -15,7 +21,8 @@ def index():
 
 @app.route("/get-questions", methods=["POST"])
 def get_questions():
-    job_description = request.form["job_description"]
+    # job_description = request.form["job_description"]
+    job_description = request.json.get("job_description")
     questions = get_interview_questions(job_description)
 
     return jsonify(questions)
