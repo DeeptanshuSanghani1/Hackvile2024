@@ -7,6 +7,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Login from "./pages/authentication/Login.tsx";
 import Register from "./pages/authentication/Register.tsx";
 import AuthLayout from "./layouts/AuthLayout.tsx";
+import Questions from "./pages/interview/Questions.tsx";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
           {
             path: "/",
             element: <Home />,
+          },
+          {
+            path: "/questions",
+            element: <Questions />,
           },
         ],
       },
