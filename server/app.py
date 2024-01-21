@@ -5,13 +5,16 @@ import json
 from pydub import AudioSegment
 from google.cloud import speech
 from google.oauth2 import service_account
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 app = Flask(__name__)
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-client_file = 'hackathon2024_SA.json'
-credentials = service_account.Credentials.from_service_account_file(client_file)
+client = OpenAI(api_key=os.getenv('API_KEY'))
+client_file = json.loads(os.getenv('TEXT_TO_SPEECH_KEY'))
+credentials = service_account.Credentials.from_service_account_info(client_file)
 
 
 @app.route("/")
