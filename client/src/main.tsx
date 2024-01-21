@@ -8,6 +8,8 @@ import Login from "./pages/authentication/Login.tsx";
 import Register from "./pages/authentication/Register.tsx";
 import AuthLayout from "./layouts/AuthLayout.tsx";
 import Questions from "./pages/interview/Questions.tsx";
+import Interview from "./pages/interview/Interview.tsx";
+import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +38,10 @@ const router = createBrowserRouter([
           {
             path: "/questions",
             element: <Questions />,
+          },
+          {
+            path: "/interview",
+            element: <Interview />,
           },
         ],
       },

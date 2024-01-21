@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
 import json
 from pydub import AudioSegment
@@ -10,7 +12,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+load_dotenv()
+
 app = Flask(__name__)
+CORS(app)
 
 client = OpenAI(api_key=os.getenv('API_KEY'))
 client_file = json.loads(os.getenv('TEXT_TO_SPEECH_KEY'))
