@@ -24,7 +24,7 @@ def index():
 
 @app.route("/get-questions", methods=["POST"])
 def get_questions():
-    job_description = request.form["job_description"]
+    job_description = request.json.get("job_description")
     questions = get_interview_questions(job_description)
 
     return jsonify(questions)
