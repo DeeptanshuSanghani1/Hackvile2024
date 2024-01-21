@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 type Inputs = {
   jobTitle: string;
@@ -11,7 +11,9 @@ const Questions = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const { register, handleSubmit } = useForm<Inputs>();
 
-  const [questions, setQuestions] = useState(([] as string[]) || null);
+  // const [questions, setQuestions] = useState([]);
+
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     let input;
@@ -28,7 +30,10 @@ const Questions = () => {
     console.log(formData);
 
     axios.post(`${API_URL}/get-questions`, formData).then((response) => {
-      setQuestions(Object.values(response.data));
+      console.log(Object.values(response.data));
+      const questions = Object.values(response.data);
+      navigate("/interview", { state: { questions: questions } });
+      // console.log(questions);
     });
   };
 
@@ -42,7 +47,7 @@ const Questions = () => {
         <input {...register("jobDescription")} placeholder="Job description" />
         <button type="submit">Generate</button>
       </form>
-      <div>
+      {/* <div>
         {questions && (
           <ul>
             {questions.map((question: string, index) => (
@@ -50,7 +55,7 @@ const Questions = () => {
             ))}
           </ul>
         )}
-      </div>
+      </div> */}
     </>
   );
 };
