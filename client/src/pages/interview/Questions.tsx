@@ -38,25 +38,27 @@ const Questions = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit(onSubmit)} className="">
+    <div className="flex flex-col items-center gap-6 mt-10 ">
+      <h1 className="text-xl tracking-wide">Job Details</h1>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col items-center gap-3 w-1/4"
+      >
         <input
           {...register("jobTitle", { required: true })}
           placeholder="Job title"
+          className="border-2 rounded p-2 w-full"
         />
-        <input {...register("jobDescription")} placeholder="Job description" />
-        <button type="submit">Generate</button>
+        <textarea
+          {...register("jobDescription")}
+          placeholder="Job description"
+          className="border-2 rounded p-2 h-52 w-full"
+        />
+        <button type="submit" className="border-2 rounded px-4 py-2 bg-sky-400">
+          Generate
+        </button>
       </form>
-      {/* <div>
-        {questions && (
-          <ul>
-            {questions.map((question: string, index) => (
-              <li key={index}>{question}</li>
-            ))}
-          </ul>
-        )}
-      </div> */}
-    </>
+    </div>
   );
 };
 
