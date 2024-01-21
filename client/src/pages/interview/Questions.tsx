@@ -11,8 +11,6 @@ const Questions = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const { register, handleSubmit } = useForm<Inputs>();
 
-  // const [questions, setQuestions] = useState([]);
-
   const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
@@ -33,7 +31,6 @@ const Questions = () => {
       console.log(Object.values(response.data));
       const questions = Object.values(response.data);
       navigate("/interview", { state: { questions: questions } });
-      // console.log(questions);
     });
   };
 
@@ -54,7 +51,10 @@ const Questions = () => {
           placeholder="Job description"
           className="border-2 rounded p-2 h-52 w-full"
         />
-        <button type="submit" className="border-2 rounded px-4 py-2 bg-sky-400">
+        <button
+          type="submit"
+          className="border-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 rounded-md"
+        >
           Generate
         </button>
       </form>
