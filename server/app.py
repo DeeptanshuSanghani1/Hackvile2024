@@ -119,7 +119,7 @@ def generate_feedback(response_text, question_text):
             except json.JSONDecodeError:
                 print("Error decoding JSON response content:")
                 print(message.content)
-                return {"error": "Invalid JSON response content"}
+                return message.content
 
     return {"error": "No response text was provided."}
 
