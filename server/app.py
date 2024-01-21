@@ -13,13 +13,11 @@ import io
 
 load_dotenv()
 
-load_dotenv()
-
 app = Flask(__name__)
 CORS(app)
 
-client = OpenAI(api_key=os.getenv('API_KEY'))
-client_file = json.loads(os.getenv('TEXT_TO_SPEECH_KEY'))
+client = OpenAI(api_key=os.getenv("API_KEY"))
+client_file = json.loads(os.getenv("TEXT_TO_SPEECH_KEY"))
 credentials = service_account.Credentials.from_service_account_info(client_file)
 
 
@@ -35,6 +33,7 @@ def get_questions():
 
     return jsonify(questions)
 
+
 @app.route("/get-feedback", methods=["POST"])
 def get_feedback():
     response = {}
@@ -45,54 +44,67 @@ def get_feedback():
     question1 = request.json.get("question1")
     question2 = request.json.get("question2")
     question3 = request.json.get("question3")
+    print("Question", question1)
 
+    # Process the videos and extract speech
+    response1, user_response1 = process_video_and_get_text(input_file1)
+    response2, user_response2 = process_video_and_get_text(input_file2)
+    response3, user_response3 = process_video_and_get_text(input_file3)
 
-    response["user_response1"] = convert_speech_to_text(upload_video(input_file1))
-    response["user_response2"] = convert_speech_to_text(upload_video(input_file2))
-    response["user_response3"] = convert_speech_to_text(upload_video(input_file3))
+    response["user_response1"] = user_response1
+    response["user_response2"] = user_response2
+    response["user_response3"] = user_response3
+    print("Response", response1)
 
-    response["feedback1"] = generate_feedback(response["user_response1"], question1)
-    response["feedback2"] = generate_feedback(response["user_response2"], question2)
-    response["feedback3"] = generate_feedback(response["user_response3"], question3)
+    response["question1"] = question1
+    response["question2"] = question2
+    response["question3"] = question3
+
+    response["feedback1"] = generate_feedback(user_response1, question1)
+    response["feedback2"] = generate_feedback(user_response2, question2)
+    response["feedback3"] = generate_feedback(user_response3, question3)
 
     return jsonify(response)
 
-def upload_video():
-    try:
-        # Receive the blob data from the frontend
-        blob_data = request.data
 
+def process_video_and_get_text(blob_data):
+    try:
         # Process the MP4 file using moviepy in memory
         video = VideoFileClip(io.BytesIO(blob_data))
 
-        # You can now work with 'video' (e.g., edit, analyze, etc.)
-        # For example, you can save it as a new MP4 file or return it as a response
+        # Perform additional video processing if needed
+        processed_video = video.resize(width=640)
 
-        # Example: Saving as a new MP4 file in memory
+        # Extract speech from the processed video
+        user_response = convert_speech_to_text(processed_video)
+
+        # Save the processed video as a new MP4 file in memory
         output_buffer = io.BytesIO()
-        video.write_videofile(output_buffer, format="mp4")
+        processed_video.write_videofile(output_buffer, format="mp4")
         output_buffer.seek(0)
 
-        # Return the video as a response
-        return Response(output_buffer, content_type="video/mp4")
+        # Return both the processed video and the extracted speech
+        return Response(output_buffer, content_type="video/mp4"), user_response
 
     except Exception as e:
-        return str(e)
+        # print(e)
+        return str(e), None
+
 
 def generate_feedback(response_text, question_text):
+    print(response_text)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
-                "content": "You are a hiring manager and a speech analyst. I will give you the question that the applicant was asked and their response.",
+                "content": "You are a hiring manager and a speech analyst.",
             },
             {
                 "role": "user",
                 "content": f"""
-                Analyze the this response and provide feedback for the applicant to help them improve their 
-                response as well as mistakes they might have made. Pay attention to their grammar and filler words. 
-                The question was "{question_text}" and the response was "{response_text}"
+                I will give you the question that the applicant was asked and their speech response. You will analyze the speech as text and give feedback on the response to the applicant, also paying attention to filler words and grammer. While also focusing on the main argument of the response and how well it aligns with what recruiters might be looking for. At the end, give a grade out of 10. You are talking to the client directly, so the feedback should be formatted as such. Don't ramble on too long, keep it concise and constructive.  
+                The question was "{question_text}" and the response was "{response_text}" 
                 """,
             },
         ],
@@ -100,13 +112,15 @@ def generate_feedback(response_text, question_text):
 
     if response.choices and len(response.choices) > 0:
         message = response.choices[0].message
-        json_response = json.loads(response.choices[0].message.content)
         if message.content:
             try:
-                questions_json = json.loads(message.content)
-                return questions_json
+                json_response = json.loads(message.content)
+                return json_response
             except json.JSONDecodeError:
-                return {"response": message.content.strip()}
+                print("Error decoding JSON response content:")
+                print(message.content)
+                return {"error": "Invalid JSON response content"}
+
     return {"error": "No response text was provided."}
 
 
@@ -139,28 +153,50 @@ def get_interview_questions(job_description):
                 return {"response": message.content.strip()}
     return {"error": "No questions were generated."}
 
-def convert_speech_to_text(input_file, output_file):
+
+def convert_speech_to_text(input_file):
     input_file = convert_mp4_to_mp3(input_file)
 
     client = speech.SpeechClient(credentials=credentials)
 
-    with open(output_file, "rb") as audio_file:
+    with open(input_file, "rb") as audio_file:
         content = audio_file.read()
-    
+
     audio = speech.RecognitionAudio(content=content)
 
     filler_words = [
-    "um", "uh", "ah", "like", "you know", "so", "actually", "basically",
-    "seriously", "literally", "I mean", "okay", "right", "you see", "well",
-    "er", "you know what I mean", "I guess", "I suppose", "sort of", "kind of",
-    "hmm", "hey", "listen", "look"
+        "um",
+        "uh",
+        "ah",
+        "like",
+        "you know",
+        "so",
+        "actually",
+        "basically",
+        "seriously",
+        "literally",
+        "I mean",
+        "okay",
+        "right",
+        "you see",
+        "well",
+        "er",
+        "you know what I mean",
+        "I guess",
+        "I suppose",
+        "sort of",
+        "kind of",
+        "hmm",
+        "hey",
+        "listen",
+        "look",
     ]
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.MP3,
         sample_rate_hertz=16000,
         language_code="en-US",
-        speech_contexts=[{"phrases": filler_words}]
+        speech_contexts=[{"phrases": filler_words}],
     )
 
     output = ""
@@ -177,11 +213,11 @@ def convert_speech_to_text(input_file, output_file):
             if result.alternatives[0].transcript != None:
                 output += result.alternatives[0].transcript
 
-
     except Exception as e:
         print(f"An error occurred: {e}")
 
     return output
+
 
 def convert_mp4_to_mp3(input_file):
     audio = AudioSegment.from_file(input_file, format="mp4")
