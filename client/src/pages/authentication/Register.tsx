@@ -1,7 +1,7 @@
 import { SignUp } from "@clerk/clerk-react";
 
 const Register = () => {
-  return <SignUp />;
+  return <SignUp afterSignUpUrl={"/"} />;
 };
 
 export default Register;
