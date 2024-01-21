@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -8,7 +8,8 @@ from pydub import AudioSegment
 from google.cloud import speech
 from google.oauth2 import service_account
 from dotenv import load_dotenv
-
+from moviepy.editor import VideoFileClip
+import io
 
 load_dotenv()
 
@@ -37,18 +38,18 @@ def get_questions():
 @app.route("/get-feedback", methods=["POST"])
 def get_feedback():
     response = {}
-    input_file1 = request.form["recording1"]
-    input_file2 = request.form["recording2"]
-    input_file3 = request.form["recording3"]
+    input_file1 = request.json.get("recording1")
+    input_file2 = request.json.get("recording2")
+    input_file3 = request.json.get("recording3")
 
-    question1 = request.form["question1"]
-    question2 = request.form["question2"]
-    question3 = request.form["question3"]
+    question1 = request.json.get("question1")
+    question2 = request.json.get("question2")
+    question3 = request.json.get("question3")
 
 
-    response["user_response1"] = convert_speech_to_text(input_file1)
-    response["user_response2"] = convert_speech_to_text(input_file2)
-    response["user_response3"] = convert_speech_to_text(input_file3)
+    response["user_response1"] = convert_speech_to_text(upload_video(input_file1))
+    response["user_response2"] = convert_speech_to_text(upload_video(input_file2))
+    response["user_response3"] = convert_speech_to_text(upload_video(input_file3))
 
     response["feedback1"] = generate_feedback(response["user_response1"], question1)
     response["feedback2"] = generate_feedback(response["user_response2"], question2)
@@ -56,7 +57,27 @@ def get_feedback():
 
     return jsonify(response)
 
+def upload_video():
+    try:
+        # Receive the blob data from the frontend
+        blob_data = request.data
 
+        # Process the MP4 file using moviepy in memory
+        video = VideoFileClip(io.BytesIO(blob_data))
+
+        # You can now work with 'video' (e.g., edit, analyze, etc.)
+        # For example, you can save it as a new MP4 file or return it as a response
+
+        # Example: Saving as a new MP4 file in memory
+        output_buffer = io.BytesIO()
+        video.write_videofile(output_buffer, format="mp4")
+        output_buffer.seek(0)
+
+        # Return the video as a response
+        return Response(output_buffer, content_type="video/mp4")
+
+    except Exception as e:
+        return str(e)
 
 def generate_feedback(response_text, question_text):
     response = client.chat.completions.create(
